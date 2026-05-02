@@ -269,7 +269,7 @@ function PrivyAgentOnboardingWizard({ chains }: { chains: SupportedChain[] }) {
   }
 
   return (
-    <main className="page-stack">
+    <main className="page-stack register-agent-page">
       <PageHeader
         title="Register agent"
         description="Pick a name and chain, then install credentials in your runtime."
@@ -280,11 +280,11 @@ function PrivyAgentOnboardingWizard({ chains }: { chains: SupportedChain[] }) {
         }
       />
 
-      <section className="grid gap-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-10">
-        <div className="card p-7 md:p-9">
+      <section className="register-agent-grid grid gap-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-10">
+        <div className="card register-agent-panel p-7 md:p-9">
           <div className="eyebrow mb-5">01 · Agent</div>
-          <div className="grid gap-6">
-            <label className="grid gap-2.5">
+          <div className="register-agent-fields grid gap-6">
+            <label className="grid gap-2.5 register-agent-field">
               <span className="label">Display name</span>
               <input
                 className="input"
@@ -295,7 +295,7 @@ function PrivyAgentOnboardingWizard({ chains }: { chains: SupportedChain[] }) {
               <span className="mono text-[11px] text-[var(--ink-500)]">Unique in the registry</span>
             </label>
 
-            <label className="grid gap-2.5">
+            <label className="grid gap-2.5 register-agent-field">
               <span className="label">Chain</span>
               <select
                 className="input select"
@@ -312,7 +312,7 @@ function PrivyAgentOnboardingWizard({ chains }: { chains: SupportedChain[] }) {
               </select>
             </label>
 
-            <div className="card p-5">
+            <div className="card register-agent-bond p-5">
               <div className="label">Registration bond</div>
               <div className="mono mt-3 text-[22px] leading-none text-[var(--ink-900)]">
                 1 {selectedChain?.nativeCurrency.symbol ?? "ETH"}
@@ -322,7 +322,7 @@ function PrivyAgentOnboardingWizard({ chains }: { chains: SupportedChain[] }) {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            <div className="register-agent-actions flex flex-wrap items-center gap-3 pt-1">
               <button
                 className="btn btn-primary"
                 disabled={isSubmitting}
@@ -335,7 +335,7 @@ function PrivyAgentOnboardingWizard({ chains }: { chains: SupportedChain[] }) {
           </div>
         </div>
 
-        <aside className="card flex flex-col p-7 md:p-9">
+        <aside className="card register-agent-panel register-agent-preview flex flex-col p-7 md:p-9">
           <div className="label">Preview</div>
           <div className="mt-6 min-h-[120px] flex flex-col justify-center">
             <div className="text-[22px] font-medium tracking-[-0.02em] text-[var(--ink-900)]">

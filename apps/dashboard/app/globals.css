@@ -264,6 +264,79 @@ textarea {
   margin-bottom: 0;
 }
 
+.register-agent-page {
+  gap: 52px;
+}
+
+.register-agent-page .page-header {
+  margin-bottom: 2px;
+}
+
+.register-agent-grid {
+  gap: 42px;
+}
+
+.register-agent-panel {
+  padding: 34px 36px;
+}
+
+.register-agent-fields {
+  gap: 28px;
+}
+
+.register-agent-field {
+  gap: 12px;
+}
+
+.register-agent-bond {
+  margin-top: 4px;
+  padding: 22px;
+}
+
+.register-agent-actions {
+  padding-top: 8px;
+}
+
+.register-agent-preview {
+  min-height: 100%;
+}
+
+.register-agent-preview .label {
+  margin-bottom: 4px;
+}
+
+.register-agent-page > .card {
+  padding: 34px 36px;
+}
+
+.register-agent-page .input,
+.register-agent-page .input-brutal {
+  height: 40px;
+  padding: 0 14px;
+}
+
+.register-agent-page .btn {
+  height: 38px;
+  padding: 0 16px;
+}
+
+@media (min-width: 1024px) {
+  .register-agent-grid {
+    gap: 54px;
+  }
+}
+
+@media (max-width: 900px) {
+  .register-agent-page {
+    gap: 36px;
+  }
+
+  .register-agent-panel,
+  .register-agent-page > .card {
+    padding: 26px 24px;
+  }
+}
+
 /* Brand lockup */
 .brand {
   display: inline-flex;
@@ -1448,18 +1521,19 @@ textarea.input-brutal {
 /* === Trace workspace === */
 .trace-workspace {
   display: grid;
-  gap: 18px;
+  gap: 26px;
+  grid-auto-rows: min-content;
 }
 
 .trace-shell {
   display: grid;
-  gap: 18px;
+  gap: 24px;
 }
 
 .trace-header-card {
   position: relative;
   overflow: hidden;
-  padding: 24px;
+  padding: 30px;
   border-color: var(--border);
 }
 
@@ -1476,15 +1550,15 @@ textarea.input-brutal {
 .trace-header-inner {
   position: relative;
   display: grid;
-  gap: 22px;
+  gap: 26px;
 }
 
 .trace-header-top {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 18px;
 }
 
 .trace-headline {
@@ -1503,19 +1577,19 @@ textarea.input-brutal {
   margin-top: 12px;
   max-width: 64ch;
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.75;
   color: var(--ink-700);
   text-wrap: pretty;
 }
 
 .trace-kpis {
   display: grid;
-  gap: 10px;
+  gap: 14px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .trace-kpi {
-  padding: 14px;
+  padding: 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--ink-100);
@@ -1545,16 +1619,35 @@ textarea.input-brutal {
 }
 
 .trace-panel-body {
-  padding: 20px;
+  padding: 26px;
+}
+
+.trace-meta-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.trace-meta-cell {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--ink-100);
+  padding: 14px 16px;
+  min-height: 88px;
+}
+
+.trace-meta-stack {
+  display: grid;
+  gap: 8px;
 }
 
 .trace-section-stack {
   display: grid;
-  gap: 16px;
+  gap: 22px;
 }
 
 .trace-mini-panel {
-  padding: 14px;
+  padding: 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--ink-100);
@@ -1562,12 +1655,45 @@ textarea.input-brutal {
 
 .trace-event-list {
   display: grid;
-  gap: 10px;
+  gap: 14px;
+}
+
+.trace-event-scroller {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  scroll-snap-type: x proximity;
+}
+
+.trace-event-card {
+  width: min(420px, 88vw);
+  min-width: min(420px, 88vw);
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--ink-050);
+  text-align: left;
+  scroll-snap-align: start;
+  transition: border-color 150ms cubic-bezier(0.2, 0, 0, 1), background 150ms
+    cubic-bezier(0.2, 0, 0, 1);
+}
+
+.trace-event-card:hover {
+  border-color: var(--ink-400);
+  background: var(--ink-100);
+}
+
+.trace-event-card[data-active="true"] {
+  border-color: color-mix(in oklab, var(--violet-500) 38%, var(--ink-200));
+  background: color-mix(in oklab, var(--violet-500) 8%, var(--ink-050));
+  box-shadow: inset 2px 0 0 var(--violet-500);
 }
 
 .trace-event-button {
   width: 100%;
-  padding: 16px;
+  padding: 18px 20px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--ink-050);
@@ -1591,26 +1717,87 @@ textarea.input-brutal {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .trace-inspector {
   display: grid;
-  gap: 14px;
-  margin-top: 14px;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.trace-inspector-panel .trace-panel-body {
+  max-height: 300px;
+  overflow: auto;
 }
 
 .trace-code-block {
-  margin-top: 8px;
-  padding: 12px 14px;
+  margin-top: 10px;
+  padding: 14px 16px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: var(--ink-100);
   color: var(--ink-700);
   font-family: var(--font-mono);
   font-size: 12px;
-  line-height: 1.65;
+  line-height: 1.72;
+}
+
+.trace-advanced-details {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--ink-050);
+  padding: 14px 16px;
+}
+
+.trace-advanced-details > summary {
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.trace-advanced-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.trace-advanced-body {
+  margin-top: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.trace-keeperhub-controls {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--ink-050);
+  padding: 10px 12px;
+}
+
+.trace-keeperhub-controls > summary {
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.trace-keeperhub-controls > summary::-webkit-details-marker {
+  display: none;
+}
+
+.trace-keeperhub-controls-body {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
 }
 
 /* === Backwards-compat: .frame, .chain-badge === */
@@ -1712,6 +1899,10 @@ textarea.input-brutal {
   }
 
   .trace-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .trace-meta-grid {
     grid-template-columns: 1fr;
   }
 }

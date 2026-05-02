@@ -526,9 +526,8 @@ function AuthenticatedTraceDetailView({ traceId }: { traceId: string }) {
                 {detail.trace.inputSummary || "Agent execution trace"}
               </h1>
               <p className="trace-subcopy">
-                Review the full run from metadata to event-level evidence. Timeline selection drives
-                the inspector, and verification plus KeeperHub status stay visible throughout the
-                investigation.
+                Review metadata, event timeline, inspector payloads, and KeeperHub execution status
+                in one clean investigation flow.
               </p>
             </div>
             <div className="trace-kpis">
@@ -565,87 +564,84 @@ function AuthenticatedTraceDetailView({ traceId }: { traceId: string }) {
         </div>
       </section>
 
-      <div className="trace-shell">
-        <aside className="trace-panel">
-          <div className="trace-panel-body trace-section-stack">
-            <div className="label text-[var(--foreground-muted)]">Trace Metadata</div>
-            <div className="mt-4">
-              {chain ? (
-                <ChainBadge chain={chain} />
-              ) : (
-                <span className="chain-badge">Unknown chain ({detail.trace.chainId})</span>
-              )}
+      <section className="trace-panel">
+        <div className="trace-panel-body">
+          <div className="label text-[var(--foreground-muted)]">Trace Metadata</div>
+          <dl className="trace-meta-grid mt-5">
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">Chain</dt>
+              <dd className="mt-2">
+                {chain ? (
+                  <ChainBadge chain={chain} />
+                ) : (
+                  <span className="chain-badge">Unknown chain ({detail.trace.chainId})</span>
+                )}
+              </dd>
             </div>
-            <dl className="mt-6 grid gap-4 text-sm leading-6">
-              <DetailRow label="Status" value={detail.trace.status} />
-              <DetailRow label="Duration" value={formatDuration(detail.trace.durationMs)} />
-              <DetailRow label="Gas Used" value={detail.trace.totalGasUsed} />
-              <DetailRow label="Estimated Cost" value={`$${detail.trace.totalCostUsd}`} />
-              <DetailRow label="Started" value={formatDate(detail.trace.startedAt)} />
-            </dl>
-
-            <div className="trace-mini-panel">
-              <div className="label text-[var(--foreground-muted)]">Share</div>
-              {detail.trace.shareToken ? (
-                <div className="mt-3 grid gap-3 text-sm leading-6">
-                  <div className="label text-[var(--foreground-muted)]">Share token</div>
-                  <div className="break-all">{detail.trace.shareToken}</div>
-                  {shareResult?.shareUrl ? (
-                    <a
-                      className="break-all text-[var(--foreground-muted)] underline"
-                      href={shareResult.shareUrl}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      {shareResult.shareUrl}
-                    </a>
-                  ) : (
-                    <p className="text-[var(--foreground-muted)]">
-                      Open <code>/share/{detail.trace.shareToken}</code> to view publicly.
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      className="nav-chip"
-                      onClick={() => {
-                        const url =
-                          shareResult?.shareUrl ??
-                          `${window.location.origin}/share/${detail.trace.shareToken}`
-                        void navigator.clipboard?.writeText(url)
-                      }}
-                      type="button"
-                    >
-                      Copy link
-                    </button>
-                    <button
-                      className="nav-chip"
-                      onClick={async () => {
-                        try {
-                          const client = createBrowserTRPCClient(() => getAccessToken())
-                          await client.mutation("traces.unshare", detail.trace.id)
-                          setDetail({
-                            ...detail,
-                            trace: { ...detail.trace, shareToken: null },
-                          })
-                          setShareResult(null)
-                          setVerifyResult(null)
-                        } catch (error) {
-                          setErrorMessage(
-                            error instanceof Error ? error.message : "Failed to unshare trace."
-                          )
-                        }
-                      }}
-                      type="button"
-                    >
-                      Unshare
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-3 grid gap-3 text-sm leading-6">
-                  <p className="text-[var(--foreground-muted)]">
-                    Generate a public link for this trace.
-                  </p>
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">Status</dt>
+              <dd className="mt-2">{detail.trace.status}</dd>
+            </div>
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">Duration</dt>
+              <dd className="mt-2">{formatDuration(detail.trace.durationMs)}</dd>
+            </div>
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">Gas used</dt>
+              <dd className="mt-2">{detail.trace.totalGasUsed}</dd>
+            </div>
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">Estimated cost</dt>
+              <dd className="mt-2">${detail.trace.totalCostUsd}</dd>
+            </div>
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">Started</dt>
+              <dd className="mt-2">{formatDate(detail.trace.startedAt)}</dd>
+            </div>
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">Share</dt>
+              <dd className="trace-meta-stack mt-2">
+                {detail.trace.shareToken ? (
+                  <>
+                    <span className="mono break-all">{detail.trace.shareToken}</span>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        className="nav-chip"
+                        onClick={() => {
+                          const url =
+                            shareResult?.shareUrl ??
+                            `${window.location.origin}/share/${detail.trace.shareToken}`
+                          void navigator.clipboard?.writeText(url)
+                        }}
+                        type="button"
+                      >
+                        Copy link
+                      </button>
+                      <button
+                        className="nav-chip"
+                        onClick={async () => {
+                          try {
+                            const client = createBrowserTRPCClient(() => getAccessToken())
+                            await client.mutation("traces.unshare", detail.trace.id)
+                            setDetail({
+                              ...detail,
+                              trace: { ...detail.trace, shareToken: null },
+                            })
+                            setShareResult(null)
+                            setVerifyResult(null)
+                          } catch (error) {
+                            setErrorMessage(
+                              error instanceof Error ? error.message : "Failed to unshare trace."
+                            )
+                          }
+                        }}
+                        type="button"
+                      >
+                        Unshare
+                      </button>
+                    </div>
+                  </>
+                ) : (
                   <button
                     className="nav-chip w-fit"
                     onClick={async () => {
@@ -688,63 +684,48 @@ function AuthenticatedTraceDetailView({ traceId }: { traceId: string }) {
                   >
                     Share trace
                   </button>
-                </div>
-              )}
+                )}
+              </dd>
             </div>
-
-            <div className="trace-mini-panel">
-              <div className="label text-[var(--foreground-muted)]">Anchor Status</div>
-              {detail.trace.anchorTxHash ? (
-                <div className="mt-3 grid gap-3 text-sm leading-6">
-                  <a
-                    className="break-all text-[var(--foreground-muted)] underline"
-                    href={
-                      anchorChain
-                        ? `${anchorChain.blockExplorerUrl}/tx/${detail.trace.anchorTxHash}`
-                        : undefined
-                    }
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    {detail.trace.anchorTxHash}
-                  </a>
-                  <span>
-                    Block {detail.trace.anchorBlock?.toString() ?? "pending"}
-                    {!anchorChain ? ` on chain ${anchorChainId}` : ""}
-                  </span>
-                </div>
-              ) : (
-                <p className="mt-3 text-sm leading-6 text-[var(--foreground-muted)]">
-                  No anchor transaction has been recorded yet.
-                </p>
-              )}
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">Anchor status</dt>
+              <dd className="trace-meta-stack mt-2">
+                {detail.trace.anchorTxHash ? (
+                  <>
+                    <a
+                      className="mono break-all text-[var(--foreground-muted)] underline"
+                      href={
+                        anchorChain
+                          ? `${anchorChain.blockExplorerUrl}/tx/${detail.trace.anchorTxHash}`
+                          : undefined
+                      }
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {detail.trace.anchorTxHash}
+                    </a>
+                    <span>
+                      Block {detail.trace.anchorBlock?.toString() ?? "pending"}
+                      {!anchorChain ? ` on chain ${anchorChainId}` : ""}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[var(--foreground-muted)]">No anchor recorded yet.</span>
+                )}
+              </dd>
             </div>
-
-            {detail.trace.shareToken ? (
-              <div className="trace-mini-panel">
-                <div className="label text-[var(--foreground-muted)]">Verification</div>
-                {verifyError ? (
-                  <p className="mt-3 text-sm leading-6 text-[var(--bear)]">{verifyError}</p>
-                ) : null}
-                {verifyResult?.verification ? (
-                  <div className="mt-3 grid gap-3 text-sm leading-6">
-                    <div>
-                      {verifyResult.verification.verified ? (
-                        <span>Verified on-chain.</span>
-                      ) : (
-                        <span className="text-[var(--foreground-muted)]">Not verified yet.</span>
-                      )}
-                    </div>
-                    {verifyResult.verification.anchorTxHash ? (
-                      <a
-                        className="break-all text-[var(--foreground-muted)] underline"
-                        href={`${verifyResult.verification.blockExplorerUrl}/tx/${verifyResult.verification.anchorTxHash}`}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        {verifyResult.verification.anchorTxHash}
-                      </a>
-                    ) : null}
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">Verification</dt>
+              <dd className="trace-meta-stack mt-2">
+                {detail.trace.shareToken ? (
+                  <>
+                    <span className="text-[var(--foreground-muted)]">
+                      {verifyResult?.verification
+                        ? verifyResult.verification.verified
+                          ? "Verified on-chain."
+                          : "Not verified yet."
+                        : "Verification pending."}
+                    </span>
                     <button
                       className="nav-chip w-fit"
                       onClick={async () => {
@@ -773,270 +754,313 @@ function AuthenticatedTraceDetailView({ traceId }: { traceId: string }) {
                     >
                       Refresh
                     </button>
-                  </div>
+                    {verifyError ? <span className="text-[var(--bear)]">{verifyError}</span> : null}
+                  </>
                 ) : (
-                  <p className="mt-3 text-sm leading-6 text-[var(--foreground-muted)]">
-                    Verification data will appear once anchoring completes.
-                  </p>
+                  <span className="text-[var(--foreground-muted)]">Share trace to verify.</span>
                 )}
-              </div>
-            ) : null}
-
-            <div className="trace-mini-panel">
-              <div className="label text-[var(--foreground-muted)]">AI Analysis</div>
-              {detail.analysis ? (
-                <>
-                  <p className="mt-3 text-sm leading-7">{detail.analysis.summary}</p>
-                  <p className="mt-4 text-sm leading-7 text-[var(--foreground-muted)]">
-                    {detail.analysis.suggestedFix}
-                  </p>
-                </>
-              ) : (
-                <p className="mt-3 text-sm leading-6 text-[var(--foreground-muted)]">
-                  Analysis has not been generated yet.
-                </p>
-              )}
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  className="nav-chip"
-                  disabled={isRerunningAnalysis}
-                  onClick={async () => {
-                    setErrorMessage(null)
-                    setIsRerunningAnalysis(true)
-                    try {
-                      const client = createBrowserTRPCClient(() => getAccessToken())
-                      const rerun = (await client.mutation("analysis.rerun", detail.trace.id)) as {
-                        queued: boolean
-                      }
-                      if (!rerun.queued) {
-                        setErrorMessage("Failed to queue analysis rerun.")
-                        return
-                      }
-                      setAwaitingAnalysis(true)
-                    } catch (error) {
-                      setErrorMessage(
-                        error instanceof Error ? error.message : "Failed to queue analysis rerun."
-                      )
-                    } finally {
-                      setIsRerunningAnalysis(false)
-                    }
-                  }}
-                  type="button"
-                >
-                  {isRerunningAnalysis ? "Queueing…" : "Rerun analysis"}
-                </button>
-                <button
-                  className="nav-chip"
-                  onClick={() => void loadTrace({ keepShareState: true, silent: true })}
-                  type="button"
-                >
-                  Refresh analysis
-                </button>
-              </div>
-              {awaitingAnalysis ? (
-                <p className="mt-3 text-sm leading-6 text-[var(--foreground-muted)]">
-                  Waiting for analysis worker output. This panel refreshes automatically.
-                </p>
-              ) : null}
+              </dd>
             </div>
+            <div className="trace-meta-cell">
+              <dt className="label text-[var(--foreground-muted)]">KeeperHub executions</dt>
+              <dd className="mt-2">{keeperHubExecutionIds.length}</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
 
-            <div className="trace-mini-panel">
-              <div className="label text-[var(--foreground-muted)]">
-                Execution Reliability (KeeperHub)
-              </div>
-              <div className="mt-3 grid gap-3 text-sm leading-6">
-                <p className="text-[var(--foreground-muted)]">
-                  Primary path: execute reliably via KeeperHub from this trace, then capture
-                  execution IDs, retries, status, and failures directly in the timeline.
+      <section className="trace-panel">
+        <div className="trace-panel-body">
+          <div className="label text-[var(--foreground-muted)]">Event Timeline</div>
+          <div className="trace-event-scroller mt-5">
+            {detail.events.length > 0 ? (
+              detail.events.map((event) => (
+                <button
+                  key={event.id}
+                  className="trace-event-card"
+                  data-active={event.id === focusedEvent?.id}
+                  onClick={() => setFocusedEventId(event.id)}
+                  type="button"
+                >
+                  <EventCard event={event} />
+                </button>
+              ))
+            ) : (
+              <p className="text-sm leading-6 text-[var(--foreground-muted)]">
+                No events are available for this trace yet.
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="trace-panel trace-inspector-panel">
+        <div className="trace-panel-body">
+          <div className="label text-[var(--foreground-muted)]">Inspector</div>
+          {focusedEvent ? <EventInspector event={focusedEvent} /> : null}
+        </div>
+      </section>
+
+      <details className="trace-advanced-details">
+        <summary>Advanced controls and analysis</summary>
+        <div className="trace-advanced-body">
+          <div className="trace-mini-panel">
+            <div className="label text-[var(--foreground-muted)]">AI Analysis</div>
+            {detail.analysis ? (
+              <>
+                <p className="mt-3 text-sm leading-7">{detail.analysis.summary}</p>
+                <p className="mt-4 text-sm leading-7 text-[var(--foreground-muted)]">
+                  {detail.analysis.suggestedFix}
                 </p>
-                <div className="grid gap-2 lg:grid-cols-2">
-                  <label className="grid gap-1">
-                    <span className="label text-[var(--foreground-muted)]">Network</span>
-                    <input
-                      className="input-brutal"
-                      onChange={(event) => setKeeperHubNetwork(event.currentTarget.value)}
-                      value={keeperHubNetwork}
-                    />
-                  </label>
-                  <label className="grid gap-1">
-                    <span className="label text-[var(--foreground-muted)]">Contract address</span>
-                    <input
-                      className="input-brutal"
-                      onChange={(event) => setKeeperHubContractAddress(event.currentTarget.value)}
-                      value={keeperHubContractAddress}
-                    />
-                  </label>
-                  <label className="grid gap-1">
-                    <span className="label text-[var(--foreground-muted)]">Function name</span>
-                    <input
-                      className="input-brutal"
-                      onChange={(event) => setKeeperHubFunctionName(event.currentTarget.value)}
-                      value={keeperHubFunctionName}
-                    />
-                  </label>
-                  <label className="grid gap-1">
-                    <span className="label text-[var(--foreground-muted)]">Function args JSON</span>
-                    <textarea
-                      className="input-brutal min-h-14 lg:col-span-2"
-                      onChange={(event) => setKeeperHubFunctionArgsJson(event.currentTarget.value)}
-                      value={keeperHubFunctionArgsJson}
-                    />
-                  </label>
-                  <label className="grid gap-1">
-                    <span className="label text-[var(--foreground-muted)]">ABI JSON</span>
-                    <textarea
-                      className="input-brutal min-h-16 lg:col-span-2"
-                      onChange={(event) => setKeeperHubAbiJson(event.currentTarget.value)}
-                      value={keeperHubAbiJson}
-                    />
-                  </label>
-                  <label className="grid gap-1">
-                    <span className="label text-[var(--foreground-muted)]">
-                      Workflow ID (webhook)
-                    </span>
-                    <input
-                      className="input-brutal"
-                      onChange={(event) => setKeeperHubWorkflowId(event.currentTarget.value)}
-                      value={keeperHubWorkflowId}
-                    />
-                  </label>
-                  <label className="grid gap-1">
-                    <span className="label text-[var(--foreground-muted)]">
-                      Workflow payload JSON
-                    </span>
-                    <textarea
-                      className="input-brutal min-h-14 lg:col-span-2"
-                      onChange={(event) =>
-                        setKeeperHubWorkflowPayloadJson(event.currentTarget.value)
-                      }
-                      value={keeperHubWorkflowPayloadJson}
-                    />
-                  </label>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className="nav-chip"
-                    disabled={isRunningKeeperHub || isRunningKeeperHubWorkflow}
-                    onClick={async () => {
-                      setKeeperHubRunError(null)
-                      setIsRunningKeeperHub(true)
-                      try {
-                        const normalizedContract = keeperHubContractAddress.trim()
-                        const normalizedFunction = keeperHubFunctionName.trim()
-                        if (!isHexAddress(normalizedContract)) {
-                          throw new Error("Contract address must be a valid 0x EVM address.")
+              </>
+            ) : (
+              <p className="mt-3 text-sm leading-6 text-[var(--foreground-muted)]">
+                Analysis has not been generated yet.
+              </p>
+            )}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                className="nav-chip"
+                disabled={isRerunningAnalysis}
+                onClick={async () => {
+                  setErrorMessage(null)
+                  setIsRerunningAnalysis(true)
+                  try {
+                    const client = createBrowserTRPCClient(() => getAccessToken())
+                    const rerun = (await client.mutation("analysis.rerun", detail.trace.id)) as {
+                      queued: boolean
+                    }
+                    if (!rerun.queued) {
+                      setErrorMessage("Failed to queue analysis rerun.")
+                      return
+                    }
+                    setAwaitingAnalysis(true)
+                  } catch (error) {
+                    setErrorMessage(
+                      error instanceof Error ? error.message : "Failed to queue analysis rerun."
+                    )
+                  } finally {
+                    setIsRerunningAnalysis(false)
+                  }
+                }}
+                type="button"
+              >
+                {isRerunningAnalysis ? "Queueing…" : "Rerun analysis"}
+              </button>
+              <button
+                className="nav-chip"
+                onClick={() => void loadTrace({ keepShareState: true, silent: true })}
+                type="button"
+              >
+                Refresh analysis
+              </button>
+            </div>
+            {awaitingAnalysis ? (
+              <p className="mt-3 text-sm leading-6 text-[var(--foreground-muted)]">
+                Waiting for analysis worker output. This panel refreshes automatically.
+              </p>
+            ) : null}
+          </div>
+
+          <div className="trace-mini-panel">
+            <div className="label text-[var(--foreground-muted)]">
+              Execution Reliability (KeeperHub)
+            </div>
+            <div className="mt-3 grid gap-3 text-sm leading-6">
+              <p className="text-[var(--foreground-muted)]">
+                Trigger from this trace and keep execution IDs, retries, status, and failures synced
+                to the timeline.
+              </p>
+              <details className="trace-keeperhub-controls">
+                <summary>Run controls</summary>
+                <div className="trace-keeperhub-controls-body">
+                  <div className="grid gap-2 lg:grid-cols-2">
+                    <label className="grid gap-1">
+                      <span className="label text-[var(--foreground-muted)]">Network</span>
+                      <input
+                        className="input-brutal"
+                        onChange={(event) => setKeeperHubNetwork(event.currentTarget.value)}
+                        value={keeperHubNetwork}
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="label text-[var(--foreground-muted)]">Contract address</span>
+                      <input
+                        className="input-brutal"
+                        onChange={(event) => setKeeperHubContractAddress(event.currentTarget.value)}
+                        value={keeperHubContractAddress}
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="label text-[var(--foreground-muted)]">Function name</span>
+                      <input
+                        className="input-brutal"
+                        onChange={(event) => setKeeperHubFunctionName(event.currentTarget.value)}
+                        value={keeperHubFunctionName}
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="label text-[var(--foreground-muted)]">
+                        Function args JSON
+                      </span>
+                      <textarea
+                        className="input-brutal min-h-14 lg:col-span-2"
+                        onChange={(event) =>
+                          setKeeperHubFunctionArgsJson(event.currentTarget.value)
                         }
-                        if (normalizedFunction.length === 0) {
-                          throw new Error("Function name is required.")
+                        value={keeperHubFunctionArgsJson}
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="label text-[var(--foreground-muted)]">ABI JSON</span>
+                      <textarea
+                        className="input-brutal min-h-16 lg:col-span-2"
+                        onChange={(event) => setKeeperHubAbiJson(event.currentTarget.value)}
+                        value={keeperHubAbiJson}
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="label text-[var(--foreground-muted)]">
+                        Workflow ID (webhook)
+                      </span>
+                      <input
+                        className="input-brutal"
+                        onChange={(event) => setKeeperHubWorkflowId(event.currentTarget.value)}
+                        value={keeperHubWorkflowId}
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="label text-[var(--foreground-muted)]">
+                        Workflow payload JSON
+                      </span>
+                      <textarea
+                        className="input-brutal min-h-14 lg:col-span-2"
+                        onChange={(event) =>
+                          setKeeperHubWorkflowPayloadJson(event.currentTarget.value)
                         }
-                        const parsedArgs = JSON.parse(keeperHubFunctionArgsJson) as unknown[]
-                        const parsedAbi = JSON.parse(keeperHubAbiJson) as unknown[]
-                        if (!Array.isArray(parsedArgs) || !Array.isArray(parsedAbi)) {
-                          throw new Error("Function args and ABI must be valid JSON arrays.")
-                        }
-                        if (parsedAbi.length === 0) {
-                          throw new Error("ABI JSON is required for direct contract calls.")
-                        }
-                        if (!abiHasFunction(parsedAbi, normalizedFunction)) {
-                          throw new Error(
-                            `Function '${normalizedFunction}' was not found in the provided ABI.`
+                        value={keeperHubWorkflowPayloadJson}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      className="nav-chip"
+                      disabled={isRunningKeeperHub || isRunningKeeperHubWorkflow}
+                      onClick={async () => {
+                        setKeeperHubRunError(null)
+                        setIsRunningKeeperHub(true)
+                        try {
+                          const normalizedContract = keeperHubContractAddress.trim()
+                          const normalizedFunction = keeperHubFunctionName.trim()
+                          if (!isHexAddress(normalizedContract)) {
+                            throw new Error("Contract address must be a valid 0x EVM address.")
+                          }
+                          if (normalizedFunction.length === 0) {
+                            throw new Error("Function name is required.")
+                          }
+                          const parsedArgs = JSON.parse(keeperHubFunctionArgsJson) as unknown[]
+                          const parsedAbi = JSON.parse(keeperHubAbiJson) as unknown[]
+                          if (!Array.isArray(parsedArgs) || !Array.isArray(parsedAbi)) {
+                            throw new Error("Function args and ABI must be valid JSON arrays.")
+                          }
+                          if (parsedAbi.length === 0) {
+                            throw new Error("ABI JSON is required for direct contract calls.")
+                          }
+                          if (!abiHasFunction(parsedAbi, normalizedFunction)) {
+                            throw new Error(
+                              `Function '${normalizedFunction}' was not found in the provided ABI.`
+                            )
+                          }
+                          const client = createBrowserTRPCClient(() => getAccessToken())
+                          const result = (await client.mutation("keeperhub.runForTrace", {
+                            traceId: detail.trace.id,
+                            request: {
+                              network: keeperHubNetwork,
+                              contractAddress: normalizedContract,
+                              functionName: normalizedFunction,
+                              functionArgs: parsedArgs,
+                              abi: parsedAbi,
+                            },
+                          })) as KeeperHubRunForTraceResult
+                          if (!result.queued) {
+                            setKeeperHubRunError("KeeperHub execution was not queued.")
+                            return
+                          }
+                          await loadTrace({ keepShareState: true, silent: true })
+                          if (result.executionId) {
+                            setKeeperHubAutoRefreshUntilMs(Date.now() + 45_000)
+                            await refreshKeeperHubExecutionStatuses({ silent: true })
+                          }
+                        } catch (error) {
+                          setKeeperHubRunError(
+                            error instanceof Error
+                              ? error.message
+                              : "Failed to trigger KeeperHub execution."
                           )
+                        } finally {
+                          setIsRunningKeeperHub(false)
                         }
-                        const client = createBrowserTRPCClient(() => getAccessToken())
-                        const result = (await client.mutation("keeperhub.runForTrace", {
-                          traceId: detail.trace.id,
-                          request: {
-                            network: keeperHubNetwork,
-                            contractAddress: normalizedContract,
-                            functionName: normalizedFunction,
-                            functionArgs: parsedArgs,
-                            abi: parsedAbi,
-                          },
-                        })) as KeeperHubRunForTraceResult
-                        if (!result.queued) {
-                          setKeeperHubRunError("KeeperHub execution was not queued.")
-                          return
+                      }}
+                      type="button"
+                    >
+                      {isRunningKeeperHub ? "Executing…" : "Execute reliably via KeeperHub"}
+                    </button>
+                    <button
+                      className="nav-chip"
+                      disabled={isRunningKeeperHub || isRunningKeeperHubWorkflow}
+                      onClick={async () => {
+                        setKeeperHubRunError(null)
+                        setIsRunningKeeperHubWorkflow(true)
+                        try {
+                          const parsedPayload = JSON.parse(keeperHubWorkflowPayloadJson) as unknown
+                          if (!isRecord(parsedPayload) || Array.isArray(parsedPayload)) {
+                            throw new Error("Workflow payload must be a valid JSON object.")
+                          }
+                          if (!keeperHubWorkflowId.trim()) {
+                            throw new Error("Workflow ID is required.")
+                          }
+                          const client = createBrowserTRPCClient(() => getAccessToken())
+                          const result = (await client.mutation("keeperhub.runWorkflowForTrace", {
+                            traceId: detail.trace.id,
+                            request: {
+                              workflowId: keeperHubWorkflowId.trim(),
+                              payload: parsedPayload,
+                            },
+                          })) as KeeperHubRunForTraceResult
+                          if (!result.queued) {
+                            setKeeperHubRunError("KeeperHub workflow execution was not queued.")
+                            return
+                          }
+                          await loadTrace({ keepShareState: true, silent: true })
+                          if (result.executionId) {
+                            setKeeperHubAutoRefreshUntilMs(Date.now() + 45_000)
+                            await refreshKeeperHubExecutionStatuses({ silent: true })
+                          }
+                        } catch (error) {
+                          setKeeperHubRunError(
+                            error instanceof Error
+                              ? error.message
+                              : "Failed to trigger KeeperHub workflow webhook."
+                          )
+                        } finally {
+                          setIsRunningKeeperHubWorkflow(false)
                         }
-                        await loadTrace({ keepShareState: true, silent: true })
-                        if (result.executionId) {
-                          setKeeperHubAutoRefreshUntilMs(Date.now() + 45_000)
-                          await refreshKeeperHubExecutionStatuses({ silent: true })
-                        }
-                      } catch (error) {
-                        setKeeperHubRunError(
-                          error instanceof Error
-                            ? error.message
-                            : "Failed to trigger KeeperHub execution."
-                        )
-                      } finally {
-                        setIsRunningKeeperHub(false)
-                      }
-                    }}
-                    type="button"
-                  >
-                    {isRunningKeeperHub ? "Executing…" : "Execute reliably via KeeperHub"}
-                  </button>
-                  <button
-                    className="nav-chip"
-                    disabled={isRunningKeeperHub || isRunningKeeperHubWorkflow}
-                    onClick={async () => {
-                      setKeeperHubRunError(null)
-                      setIsRunningKeeperHubWorkflow(true)
-                      try {
-                        const parsedPayload = JSON.parse(keeperHubWorkflowPayloadJson) as unknown
-                        if (!isRecord(parsedPayload) || Array.isArray(parsedPayload)) {
-                          throw new Error("Workflow payload must be a valid JSON object.")
-                        }
-                        if (!keeperHubWorkflowId.trim()) {
-                          throw new Error("Workflow ID is required.")
-                        }
-                        const client = createBrowserTRPCClient(() => getAccessToken())
-                        const result = (await client.mutation("keeperhub.runWorkflowForTrace", {
-                          traceId: detail.trace.id,
-                          request: {
-                            workflowId: keeperHubWorkflowId.trim(),
-                            payload: parsedPayload,
-                          },
-                        })) as KeeperHubRunForTraceResult
-                        if (!result.queued) {
-                          setKeeperHubRunError("KeeperHub workflow execution was not queued.")
-                          return
-                        }
-                        await loadTrace({ keepShareState: true, silent: true })
-                        if (result.executionId) {
-                          setKeeperHubAutoRefreshUntilMs(Date.now() + 45_000)
-                          await refreshKeeperHubExecutionStatuses({ silent: true })
-                        }
-                      } catch (error) {
-                        setKeeperHubRunError(
-                          error instanceof Error
-                            ? error.message
-                            : "Failed to trigger KeeperHub workflow webhook."
-                        )
-                      } finally {
-                        setIsRunningKeeperHubWorkflow(false)
-                      }
-                    }}
-                    type="button"
-                  >
-                    {isRunningKeeperHubWorkflow ? "Running workflow…" : "Run workflow webhook"}
-                  </button>
+                      }}
+                      type="button"
+                    >
+                      {isRunningKeeperHubWorkflow ? "Running workflow…" : "Run workflow webhook"}
+                    </button>
+                  </div>
                 </div>
-                {keeperHubRunError ? (
-                  <p className="text-[var(--danger)]">{keeperHubRunError}</p>
-                ) : null}
-              </div>
+              </details>
+              {keeperHubRunError ? (
+                <p className="text-[var(--danger)]">{keeperHubRunError}</p>
+              ) : null}
               {detail.events.some((event) => isKeeperHubToolCall(event)) ? (
                 <div className="mt-3 grid gap-2 text-sm leading-6">
                   <p className="text-[var(--foreground-muted)]">
-                    This trace includes KeeperHub execution events. Select a KeeperHub tool call in
-                    the timeline to inspect retries, status, and settlement evidence.
+                    KeeperHub events captured in this trace.
                   </p>
-                  <DetailRow
-                    label="KeeperHub calls"
-                    value={`${detail.events.filter((event) => isKeeperHubToolCall(event)).length}`}
-                  />
-                  <DetailRow label="Execution IDs" value={`${keeperHubExecutionIds.length}`} />
                   {keeperHubExecutionTimeline.length > 0 ? (
                     <div className="mt-2 grid gap-2">
                       {keeperHubExecutionTimeline.map((entry) => (
@@ -1048,46 +1072,7 @@ function AuthenticatedTraceDetailView({ traceId }: { traceId: string }) {
                           <div className="mt-2 text-xs text-[var(--foreground-muted)]">
                             {entry.latestEventName} • {formatDate(entry.updatedAt)}
                           </div>
-                          <div className="mt-1 text-xs text-[var(--foreground-muted)]">
-                            {entry.transactionLink ? (
-                              <a
-                                className="break-all underline"
-                                href={entry.transactionLink}
-                                rel="noreferrer"
-                                target="_blank"
-                              >
-                                {entry.transactionLink}
-                              </a>
-                            ) : (
-                              "Settlement tx: n/a"
-                            )}
-                          </div>
-                          <div className="mt-1 text-xs text-[var(--foreground-muted)]">
-                            Failed reason: {entry.failedReason ?? "none"}
-                          </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : null}
-                  {keeperHubExecutionIds.length > 0 ? (
-                    <div className="mt-2 grid gap-2">
-                      {keeperHubExecutionIds.map((executionId) => (
-                        <button
-                          className="frame grid w-full grid-cols-[1fr_auto] items-center gap-3 p-2 text-left"
-                          key={executionId}
-                          onClick={() => {
-                            const event = latestKeeperHubEventByExecutionId.get(executionId)
-                            if (event) {
-                              setFocusedEventId(event.id)
-                            }
-                          }}
-                          type="button"
-                        >
-                          <span className="break-all text-xs">{executionId}</span>
-                          <span className="chain-badge">
-                            {executionStatusById[executionId] ?? "unknown"}
-                          </span>
-                        </button>
                       ))}
                     </div>
                   ) : null}
@@ -1134,10 +1119,6 @@ function AuthenticatedTraceDetailView({ traceId }: { traceId: string }) {
                   {executionStatusError ? (
                     <p className="text-[var(--bear)]">{executionStatusError}</p>
                   ) : null}
-                  <p className="text-xs leading-5 text-[var(--foreground-muted)]">
-                    Tip: use the two “Open latest … event” buttons to jump directly to inspector
-                    details.
-                  </p>
                 </div>
               ) : (
                 <p className="mt-3 text-sm leading-6 text-[var(--foreground-muted)]">
@@ -1146,40 +1127,8 @@ function AuthenticatedTraceDetailView({ traceId }: { traceId: string }) {
               )}
             </div>
           </div>
-        </aside>
-
-        <section className="trace-panel">
-          <div className="trace-panel-body">
-            <div className="label text-[var(--foreground-muted)]">Event Timeline</div>
-            <div className="trace-event-list mt-6">
-              {detail.events.length > 0 ? (
-                detail.events.map((event) => (
-                  <button
-                    key={event.id}
-                    className="trace-event-button"
-                    data-active={event.id === focusedEvent?.id}
-                    onClick={() => setFocusedEventId(event.id)}
-                    type="button"
-                  >
-                    <EventCard event={event} />
-                  </button>
-                ))
-              ) : (
-                <p className="text-sm leading-6 text-[var(--foreground-muted)]">
-                  No events are available for this trace yet.
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
-
-        <aside className="trace-panel">
-          <div className="trace-panel-body">
-            <div className="label text-[var(--foreground-muted)]">Inspector</div>
-            {focusedEvent ? <EventInspector event={focusedEvent} /> : null}
-          </div>
-        </aside>
-      </div>
+        </div>
+      </details>
     </main>
   )
 }
